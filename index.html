@@ -2,21 +2,21 @@
 <html>
 
 <head>
-  <title>Title Here</title>
+  <title>Miner Game</title>
   <style>
     body {
       text-align: center;
     }
 
-    #main {
+    #game {
       display: inline-block;
       padding: 1px;
       border: 1px solid gray;
-      margin-top: 50vh;
-      transform: translateY(-50%);
+      /* margin-top: 20vh;
+      transform: translateY(-50%); */
     }
 
-    #main div>span {
+    #game div>span {
       width: 20px;
       height: 20px;
       display: flex;
@@ -47,12 +47,28 @@
     .denger {
       background-color: #982020;
     }
+
+    .rules h2{
+      font-size: 44px;
+      text-transform: uppercase;
+      color: #3c3c3c;
+      margin: 20px 0;
+    }
   </style>
 </head>
 
 <body>
-
-  <div id="main">
+  <div class="game-container">
+    <div class="rules">
+      <h2>Miner</h2>
+      <p>For win in this game you need to find all mines in map</p>
+      <p>By left-clicking on tile you open it</p>
+      <p>If you open tile with mine - you lose</p>
+      <p>Number on a tile shows how match mines around this tile</p>
+      <p>By left-clicking on a tile with holded 'shift' button it marked that it is dangerous</p>
+    </div>
+    <div id="game">
+    </div>
   </div>
   <script type="text/javascript" src="script.js"></script>
 </body>
