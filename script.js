@@ -4,189 +4,165 @@ let mines;
 let defaultMines = 20;
 let newArr;
 let newnewArr;
+let superNewArr;
 let gameEnded = false;
 let shiftPushed = false;
+let minesArr = [];
+const MAX = 70, MIN = 10;
+let SPEED = 200;
+let direction;
+let snake;
+let foodLocation = null;
 
 function setMapSize() {
-    let promptVal = prompt('Set size of map in format number*number\nInput number: ', 10);
+    let promptVal = prompt('Set size of map in format number*number\nInput number(min: ' + MIN + ', max: ' + MAX + '): ', defaultNumber);
     number = promptVal === null || promptVal === '' ? defaultNumber : promptVal;
-    if (isNaN(number) || number > 30) {
+    if (isNaN(number) || number > MAX || number < MIN) {
         setMapSize();
     }
     number = parseInt(number, 10);
+    defaultNumber = number;
 }
 
-function setMines() {
-    let promptVal = prompt('Set number for mines: ', (number * number) * 0.1);
-    mines = promptVal === null || promptVal === '' ? defaultMines : promptVal;
-    if (mines > number * number || mines < (number * number) * 0.1 || isNaN(mines)) {
-        setMines();
+function setDirection(e) {
+    let prevDirect = direction;
+    switch (e.key) {
+        case 'ArrowUp': direction = -number;
+            break;
+        case 'ArrowDown': direction = +number;
+            break;
+        case 'ArrowLeft': direction = -1;
+            break;
+        case 'ArrowRight': direction = 1;
+            break;
     }
-    mines = parseInt(mines, 10);
-}
-
-function setShiftPushed(e, pushed) {
-    if(e.key === "Shift") {
-        shiftPushed = pushed;
-    }
+    if (snake[1] === snake[0] + direction) direction = prevDirect;
 }
 
 function startGame() {
-    setMapSize();
-    setMines();
-    document.body.addEventListener('keydown', (e) => setShiftPushed(e, true), true);
-    document.body.addEventListener('keyup', (e) => setShiftPushed(e, false), true);
+    // setMapSize();
+    document.body.addEventListener('keydown', setDirection)
+    number = 20;
+    direction = -20;
     newArr = new Array(number * number);
     newArr.fill(0);
-    gameEnded = false;
-
-    for (let i = 0; i < mines;) {
-        let random = Math.floor(Math.random() * (number * number)) + 0;
-        if (newArr[random] !== '*') {
-            newArr[random] = '*';
-            i++;
-        }
-    }
-
-    changeAroundBoxes('*', valuePlus);
-
-    newnewArr = [];
-    newArr = newArr.map((item, index) => {
-        if (item === 0) {
-            return { content: '&nbsp;', isOpened: false, id: index };
-        }
-        return { content: item, isOpened: false, id: index };
+    snake = [209, 229, 249, 269, 289, 309, 329, 349];
+    snake.forEach(id => {
+        newArr[id] = 1;
     })
+    newnewArr = [];
+    if (!gameEnded) setLoop();
     renderMap()
+}
+
+function setLoop() {
+    gameEnded = true;
+    setTimeout(function iteration() {
+        snakeMove();
+        setTimeout(iteration, SPEED);
+    }, SPEED)
+}
+
+
+function endGame() {
+    alert('End Game!');
+    gameEnded = true;
+    return startGame();
+}
+
+function snakeMove() {
+    let nextMove = snake[0] + direction;
+    if (''.indexOf.call(snake[0], '9') !== -1 && nextMove % number === 0) return endGame();
+    if (''.indexOf.call(nextMove, '9') !== -1 && snake[0] % number === 0) return endGame();
+    if (nextMove < 0) return endGame();
+    if (nextMove >= number * number) return endGame();
+    if (snake.some(item => item === nextMove)) return endGame();
+    snake.unshift(nextMove);
+    if(superNewArr[nextMove].isFood) {
+        newArr[nextMove] = 1;
+        setFood();
+        // if(!(SPEED <= 50)) SPEED -= 25;
+    }
+    if (!superNewArr[nextMove].isFood) snake.pop();
+    renderMap();
 }
 
 startGame();
 
-function valuePlus(index) {
-    if (newArr[index] === '*') return;
-    newArr[index] += 1;
+function renderTile(id) {
+    let tile = document.getElementsByClassName('tile')[id];
+    tile.innerHTML = '';
+    let it = newArr[id];
+    if (newArr[id].isOpened === true) {
+        tile.className = 'tile opened';
+    } else {
+        tile.className = 'tile';
+    }
+    let insertedTag = it.denger === true ? '<span class="front-ground denger' : '<span class="front-ground';
+    let string = it.content + insertedTag + '"></span>';
+    tile.innerHTML = string;
 }
 
-function changeAroundBoxes(selector, callback, once = false, id = null) {
-    function changeManipulation(item, index) {
-        if (item === selector) {
-            let notLeft = (index) % number !== 0;
-            let notRight = (index + 1) % number !== 0;
-            let notBot = !(index >= (newArr.length - number - 1));
-            let notTop = !(index <= number - 1);
-            if (notLeft) {
-                callback(index - 1);
-                if (notBot) callback(index + number - 1);
-                if (notTop) callback(index - number - 1);
-            }
-            if (notRight) {
-                callback(index + 1);
-                if (notTop) callback(index - number + 1);
-                if (notBot) callback(index + number + 1);
-            }
-            if (notTop) { callback(index - number) };
-            if (notBot) callback(index + number);
-        }
-    }
-    if (once === true) {
-        changeManipulation(newArr[id].content, parseInt(id, 10));
+function setFood() {
+    let random = Math.floor(Math.random() * (number * number)) + 0;
+    if (newArr[random] !== 1 && newArr[random] !== 2) {
+        // newArr[newArr.indexOf(2)] = 1;
+        newArr[random] = 2;
+        foodLocation = random;
         return;
     }
-    newArr.forEach(changeManipulation);
+    setFood();
 }
 
 function renderMap() {
-    for (let i = 0; i < number; i++) {
-        newnewArr[i] = newArr.slice(number * i, (i + 1) * number);
+    newArr.fill(0);
+    snake.forEach(id => {
+        newArr[id] = 1;
+    })
+    if(foodLocation === null) {
+        setFood();
+    } else {
+        newArr[foodLocation] = 2;
     }
 
-    document.getElementById('game').innerHTML = '';
+    superNewArr = newArr.map((item, index) => {
+        if (item === 1) {
+            return { content: 1, isSnake: true, id: index };
+        }
+        if (item === 2) {
+            return { content: 1, isFood: true, id: index };
+        }
+        return { content: 0, isSnake: false, id: index };
+    })
+    for (let i = 0; i < number; i++) {
+        newnewArr[i] = superNewArr.slice(number * i, (i + 1) * number);
+    }
+    let game = document.getElementById('game');
+    game.innerHTML = '';
+    if (number >= 40) {
+        game.className = 'small';
+    } else {
+        game.className = '';
+    }
     newnewArr.forEach(item => {
         let div = document.createElement('div');
+        div.className = 'row';
         let string = '';
         item.forEach(it => {
-            let tag = it.isOpened ? '<span class="opened" ' : '<span ';
-            let insertedTag = it.denger === true ? '<span class="front-ground denger' : '<span class="front-ground';
-            string += tag + 'value="' + it.id + '" ' + 'onClick="some(this)">' + it.content + insertedTag + '"></span></span>';
+            let tag = '<span class="tile "';
+            if (it.isSnake) {
+                tag = '<span class="tile snake" ';
+            }
+            if (it.isFood) {
+                tag = '<span class="tile food" ';
+                string += tag + 'value="' + it.id + '" ' + '><span></span></span>';
+                return;
+            }
+            // let insertedTag = it.denger === true ? '<span class="front-ground denger' : '<span class="front-ground';
+            string += tag + 'value="' + it.id + '" ' + '></span>';
         })
         div.innerHTML = string;
-        document.getElementById('game').appendChild(div);
+        game.appendChild(div);
     })
-
-}
-
-function openAllMines() {
-    newArr = newArr.map(item => {
-        if (item.content === '*') {
-            item.isOpened = true;
-        }
-        return item;
-    })
-    renderMap();
-}
-
-function checkIfWin() {
-    return !newArr.some(item => {
-        return (item.content !== '*' && item.isOpened === false);
-    })
-}
-
-function emptyBoxHendle(index) {
-    changeAroundBoxes('&nbsp;', openBox, true, index);
-    renderMap();
-}
-
-function openBox(index) {
-    let some = newArr[index].isOpened;
-    newArr[index].isOpened = true;
-    if (newArr[index].content === '&nbsp;' && some === false) {
-        emptyBoxHendle(index);
-    }
-}
-
-function some(e) {
-    let id = e.getAttribute('value');
-    if (gameEnded === true) {
-        startGame();
-        return;
-    };
-
-    if(shiftPushed) {
-        newArr[id].denger = newArr[id].denger ? !newArr[id].denger : true;
-        renderMap();
-        return;
-    }
-
-    if (newArr[id].content === '&nbsp;') {
-        newArr[id].isOpened = true;
-        emptyBoxHendle(id);
-    } else {
-        openBox(id);
-    }
-
-    renderMap();
-    if (newArr[id].content === '*') {
-        openAllMines();
-        let el = document.querySelectorAll('[value="' + e.getAttribute('value') + '"]')[0];
-        el.className += " red";
-        setTimeout(() => {
-            if (confirm('Game Over!\nDo you wont to try again?')) {
-                startGame();
-                return;
-            }
-            gameEnded = true;
-        }, 0)
-    }
-
-    if (checkIfWin()) {
-        openAllMines();
-        setTimeout(() => {
-            if (confirm('YOU WIN! CONNGRATZ!\nDo you wont to win again?')) {
-                startGame();
-                return;
-            }
-            gameEnded = true;
-        }, 0)
-    }
 
 }

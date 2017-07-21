@@ -12,19 +12,43 @@
       display: inline-block;
       padding: 1px;
       border: 1px solid gray;
-      /* margin-top: 20vh;
-      transform: translateY(-50%); */
+      white-space: nowrap;
     }
 
-    #game div>span {
+    .tile {
       width: 20px;
       height: 20px;
-      display: flex;
       text-align: center;
-      display: inline-block;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       margin: 1px;
       cursor: pointer;
       position: relative;
+      background-color: #e6e6e6;
+    }
+
+    .snake {
+      background-color: grey;
+    }
+
+    .food {}
+
+    .food span {
+      background-color: grey;
+      display: block;
+      width: 50%;
+      height: 50%;
+    }
+
+    .row {
+      display: flex
+    }
+
+    .small .tile {
+      width: 15px;
+      height: 15px;
+      font-size: 14px;
     }
 
     .opened .front-ground {
@@ -48,7 +72,7 @@
       background-color: #982020;
     }
 
-    .rules h2{
+    .rules h2 {
       font-size: 44px;
       text-transform: uppercase;
       color: #3c3c3c;
@@ -60,12 +84,7 @@
 <body>
   <div class="game-container">
     <div class="rules">
-      <h2>Miner</h2>
-      <p>For win in this game you need to find all mines in map</p>
-      <p>By left-clicking on tile you open it</p>
-      <p>If you open tile with mine - you lose</p>
-      <p>Number on a tile shows how match mines around this tile</p>
-      <p>By left-clicking on a tile with holded 'shift' button it marked that it is dangerous</p>
+      <h2>Snake</h2>
     </div>
     <div id="game">
     </div>
